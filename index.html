@@ -51,7 +51,7 @@
     }
 
     .wrap {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 1.25rem 1.25rem 4rem;
     }
@@ -333,18 +333,24 @@
     /* ——— News cards ——— */
     .news-grid {
       display: grid;
-      gap: 0.85rem;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 900px) {
+      .news-grid {
+        grid-template-columns: 1fr 1fr;
+      }
     }
 
     .news-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.1rem 1.2rem;
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 1rem;
-      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
@@ -352,45 +358,88 @@
       border-color: #334155;
       background: var(--bg-hover);
       box-shadow: var(--shadow);
+      transform: translateY(-2px);
     }
 
+    .news-media {
+      position: relative;
+      width: 100%;
+      height: 150px;
+      background: linear-gradient(135deg, #1a2744 0%, #2a1a44 50%, #123038 100%);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .news-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .news-media .media-fallback {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      opacity: 0.45;
+      background: linear-gradient(135deg, #1a2744 0%, #2a1a44 50%, #123038 100%);
+    }
+
+    .news-media.broken img { display: none; }
+    .news-media.broken .media-fallback { display: flex; }
+
     .score-badge {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
+      position: absolute;
+      top: 0.65rem;
+      left: 0.65rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 1.35rem;
+      font-size: 1.2rem;
       font-variant-numeric: tabular-nums;
       line-height: 1;
       flex-shrink: 0;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      z-index: 1;
     }
 
     .score-badge .lbl {
-      font-size: 0.55rem;
+      font-size: 0.5rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      opacity: 0.75;
-      margin-top: 0.15rem;
+      opacity: 0.8;
+      margin-top: 0.12rem;
     }
 
-    .score-10, .score-9 { background: var(--green-soft); color: var(--green); }
-    .score-8, .score-7 { background: var(--orange-soft); color: var(--orange); }
-    .score-6, .score-5 { background: var(--accent-soft); color: var(--accent); }
-    .score-low { background: rgba(139, 155, 180, 0.12); color: var(--text-muted); }
+    .score-10, .score-9 { background: rgba(61, 214, 140, 0.92); color: #042014; }
+    .score-8, .score-7 { background: rgba(255, 159, 67, 0.92); color: #2a1500; }
+    .score-6, .score-5 { background: rgba(91, 140, 255, 0.92); color: #061028; }
+    .score-low { background: rgba(139, 155, 180, 0.9); color: #0b0f19; }
 
-    .news-body { min-width: 0; }
+    .news-body {
+      min-width: 0;
+      padding: 0.95rem 1.05rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
 
     .news-top {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.45rem;
-      margin-bottom: 0.4rem;
+      gap: 0.4rem;
+      margin-bottom: 0.45rem;
     }
 
     .foco-badge {
@@ -415,10 +464,81 @@
       line-height: 1.35;
     }
 
+    .news-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .news-title a:hover {
+      color: var(--accent);
+    }
+
     .news-why {
       color: var(--text-muted);
-      font-size: 0.9rem;
+      font-size: 0.88rem;
+      margin-bottom: 0.75rem;
+      flex: 1;
+    }
+
+    .source-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.55rem 0.65rem;
+      background: var(--bg-elev);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
       margin-bottom: 0.65rem;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .source-row:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .source-favicon {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      background: var(--border-soft);
+    }
+
+    .source-meta {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.05rem;
+    }
+
+    .source-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .source-host {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .source-cta {
+      font-size: 0.72rem;
+      font-weight: 650;
+      color: var(--accent);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .news-footer {
@@ -432,7 +552,7 @@
       color: var(--accent);
       text-decoration: none;
       font-size: 0.82rem;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .fuente-link:hover { text-decoration: underline; }
@@ -544,8 +664,8 @@
 
     @media (max-width: 800px) {
       .cola-layout { grid-template-columns: 1fr; }
-      .news-card { grid-template-columns: 1fr; }
-      .score-badge { width: 48px; height: 48px; }
+      .news-media { height: 140px; }
+      .score-badge { width: 44px; height: 44px; font-size: 1.1rem; }
       .header-meta { text-align: left; }
     }
 
@@ -856,7 +976,7 @@
       titulo: "Resumen IA",
       fecha: "2026-09-28",
       fechaLabel: "lunes 28 de septiembre de 2026",
-      resumenCorto: "Semana de precio + hardware + transparencia: Anthropic y OpenAI lanzan modelos más baratos, Meta pone Muse en Charm y gafas, Amazon cierra el acceso de compra, Anthropic mide que Claude lidera el 26 % de su I+D, y Google manda TPUs a órbita."
+      resumenCorto: "Semana densa: Anthropic y OpenAI bajan el precio de la frontera (Opus 5.5 / GPT-6 Sol·Luna), Meta mete Muse en Charm y gafas, Amazon cierra el carrito agéntico, Anthropic mide un 26 % de I+D en AL4, OpenAI crea un advisory de matemáticas, el Parlamento británico cita a los labs, Google manda TPUs a órbita, y llegan papers de throughput + harnesses tipo Jev/Fusion."
     },
     noticias: [
       {
@@ -865,7 +985,8 @@
         focos: ["producto", "sector"],
         impacto: 10,
         porQueImporta: "Primera jornada clara de la «era del pacing»: ambos labs piden ritmo prudente… y compiten a tiros de capacidad + descuento en menos de 90 minutos.",
-        fuente: { nombre: "Anthropic — Claude Opus 5.5", url: "https://www.anthropic.com/claude-opus-5-5" },
+        fuente: { nombre: "Anthropic — Claude Opus 5.5", url: "https://www.anthropic.com/claude-opus-5-5", dominio: "anthropic.com" },
+        imagen: "https://www-cdn.anthropic.com/images/4zrzovbb/website/f4d37a1d1f582f53f4e89440062b649b6273a093-1200x630.jpg",
         tags: ["pricing", "pacing", "Opus 5.5", "GPT-6"]
       },
       {
@@ -874,7 +995,8 @@
         focos: ["sector"],
         impacto: 9,
         porQueImporta: "Un agente que elige producto y paga puede saltarse el motor publicitario de Amazon (~$56B). El bloqueo a las 12 días marca el mapa de fricción agente↔plataforma.",
-        fuente: { nombre: "The Rundown — Amazon vs Muse", url: "https://www.therundown.ai/articles/amazon-shuts-out-meta-s-muse" },
+        fuente: { nombre: "The Rundown — Amazon vs Muse", url: "https://www.therundown.ai/articles/amazon-shuts-out-meta-s-muse", dominio: "therundown.ai" },
+        imagen: "https://beehiiv-images-production.s3.amazonaws.com/uploads/asset/file/1bbff9e6-872b-4fea-b2a0-b2dd8b5353ee/f35ea85d-49b1-48ae-ad86-6cf9c98ef810.png?t=1790012160",
         tags: ["agentes", "retail", "Amazon", "Meta"]
       },
       {
@@ -883,7 +1005,8 @@
         focos: ["investigacion", "tecnico"],
         impacto: 9,
         porQueImporta: "Primera foto medible de IA construyendo la siguiente IA en un lab frontera — y de la oversight de ~30.000 agentes internos.",
-        fuente: { nombre: "Anthropic Institute", url: "https://www.anthropic.com/institute/measuring-pace-of-ai-development" },
+        fuente: { nombre: "Anthropic Institute", url: "https://www.anthropic.com/institute/measuring-pace-of-ai-development", dominio: "anthropic.com" },
+        imagen: "https://www-cdn.anthropic.com/images/4zrzovbb/website/9cf3a514384821aeb53ff34d878b210715cd5c06-1200x630.jpg",
         tags: ["AL4", "transparencia", "pacing", "safety"]
       },
       {
@@ -892,19 +1015,81 @@
         focos: ["producto"],
         impacto: 8,
         porQueImporta: "Meta deja de vender «metaverso» y vende un agente que la gente ya usa, metido en hardware que lleva encima (gafas) o en el bolsillo (Charm).",
-        fuente: { nombre: "Meta Newsroom — Connect 2026", url: "https://about.fb.com/news/2026/09/the-biggest-news-from-connect-2026/" },
+        fuente: { nombre: "Meta Newsroom — Connect 2026", url: "https://about.fb.com/news/2026/09/the-biggest-news-from-connect-2026/", dominio: "about.fb.com" },
+        imagen: "https://about.fb.com/wp-content/uploads/2026/09/The-Biggest-News-From-Connect-2026_Header-1.jpg?w=1200",
         tags: ["Muse", "hardware", "gafas AI", "Charm"]
       },
       {
         id: "n5",
+        titulo: "OpenAI crea un advisory group de matemáticas (IAS Princeton) tras 100+ problemas abiertos",
+        focos: ["investigacion", "sector"],
+        impacto: 8,
+        porQueImporta: "El cuello de botella ya no es solo «¿el modelo saca teoremas?», sino crédito, revisión y ritmo de publicación — punto que ya protestaron Fields Medalists.",
+        fuente: { nombre: "OpenAI — Advisory Group on Mathematics and AI", url: "https://openai.com/index/advisory-group-on-mathematics-and-ai/", dominio: "openai.com" },
+        imagen: "https://images.ctfassets.net/kftzwdyauwt9/11yqmSO7D1dfYveBnOdmJt/e451277f37f82f51d6d20f2b86826590/advisory-group-on-mathematics-and-artificial-intelligence-seo.png?w=1600&h=900&fit=fill",
+        tags: ["matemáticas", "IAS", "investigación", "OpenAI"]
+      },
+      {
+        id: "n6",
+        titulo: "La «era del pacing»: primer día de lanzamientos frontera con descuento",
+        focos: ["sector", "producto"],
+        impacto: 8,
+        porQueImporta: "El mismo día que se pide ritmo prudente, los labs pelean cuota con capacidad + precio. El KPI útil pasa de $/1M tokens a $/tarea correcta.",
+        fuente: { nombre: "The Rundown — Pacing era launch day", url: "https://www.therundown.ai/articles/the-pacing-era-s-first-launch-day", dominio: "therundown.ai" },
+        imagen: "https://beehiiv-images-production.s3.amazonaws.com/uploads/asset/file/822e652d-c832-4607-a65e-8833a7c4d992/duel.png?t=1790104287",
+        tags: ["pacing", "pricing", "frontier", "labs"]
+      },
+      {
+        id: "n7",
+        titulo: "Parlamento británico cita a OpenAI, Anthropic, Google y Meta por seguridad de IA",
+        focos: ["sector"],
+        impacto: 7,
+        porQueImporta: "Los MPs preguntarán si el testing de seguridad debe ser obligatorio y si un regulador puede bloquear un lanzamiento — presión sobre el modelo voluntario actual.",
+        fuente: { nombre: "City A.M. — Parliament summons", url: "https://www.cityam.com/openai-and-anthropic-summoned-to-parliament-on-fears-uk-ai-rules-not-fit-for-future/", dominio: "cityam.com" },
+        imagen: "https://www.cityam.com/wp-content/uploads/2025/10/GettyImages-2243304418-1.jpg",
+        tags: ["regulación", "UK", "safety", "policy"]
+      },
+      {
+        id: "n8",
         titulo: "Google Project Suncatcher: primer TPU Trillium a órbita",
         focos: ["sector", "investigacion"],
         impacto: 7,
         porQueImporta: "Si el coste energético y la oposición local a data centers crecen, el compute en el espacio deja de ser sci-fi y pasa a roadmap de ingeniería.",
-        fuente: { nombre: "Google Blog — Project Suncatcher", url: "https://blog.google/innovation-and-ai/models-and-research/google-research/google-project-suncatcher-facts/" },
+        fuente: { nombre: "Google Blog — Project Suncatcher", url: "https://blog.google/innovation-and-ai/models-and-research/google-research/google-project-suncatcher-facts/", dominio: "blog.google" },
+        imagen: "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Project_Suncatcher_social.width-1300.png",
         tags: ["TPU", "órbita", "infraestructura", "Google"]
+      },
+      {
+        id: "n9",
+        titulo: "The Batch: Jev (clasificador no-LLM) y Devin Fusion (lead + sidekick)",
+        focos: ["producto", "tecnico"],
+        impacto: 7,
+        porQueImporta: "Dos apuestas a especialización: un modelo que solo clasifica barato/rápido, y un harness que deja planificar al frontier y ejecutar al barato sin romper el prompt cache.",
+        fuente: { nombre: "The Batch #372", url: "https://www.deeplearning.ai/the-batch/issue-372", dominio: "deeplearning.ai" },
+        imagen: "https://charonhub.deeplearning.ai/content/images/2026/09/The-Batch-Letter-Evals-1-1.webp",
+        tags: ["Jev", "Devin", "harness", "eficiencia"]
+      },
+      {
+        id: "n10",
+        titulo: "GPT-6 Sol en la API: coding/agéntico a ~50 % menos que la generación previa",
+        focos: ["producto", "tecnico"],
+        impacto: 7,
+        porQueImporta: "Sol (~$2/$10 por M tokens) y Luna (~$0.10/$0.50) empujan a equipos a rehacer el router de modelos: mid-tier eficiente para la mayoría de workloads.",
+        fuente: { nombre: "OpenAI API — GPT-6 Sol", url: "https://developers.openai.com/api/docs/models/gpt-6-sol", dominio: "developers.openai.com" },
+        imagen: "https://developers.openai.com/og/api/docs/models/gpt-6-sol.png",
+        tags: ["GPT-6", "API", "pricing", "Sol"]
+      },
+      {
+        id: "n11",
+        titulo: "Paper HF: «Your Transformer Can Hold Two Thoughts at Once» (superposición lineal)",
+        focos: ["investigacion", "tecnico"],
+        impacto: 6,
+        porQueImporta: "Mezclar embeddings de dos streams en un solo forward pass puede, con fine-tune ligero + decoding guiado, aproximar 2× throughput y menos KV-cache.",
+        fuente: { nombre: "Hugging Face Papers — arXiv:2609.29845", url: "https://huggingface.co/papers/2609.29845", dominio: "huggingface.co" },
+        imagen: "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2609.29845/gradient.png",
+        tags: ["transformers", "inferencia", "throughput", "arXiv"]
       }
-    ],
+        ],
     aprende: {
       titulo: "Qué significa realmente la «guerra de precios» en modelos frontera",
       teaser: "No es solo «más barato por token». Es un stack de capas: flagship, mid-tier eficiente, volume, y un harness que decide quién hace qué. El KPI que importa ya no es $/1M tokens, sino $/tarea resuelta con calidad aceptable.",
@@ -1020,6 +1205,20 @@
   }
 
   /* ——— Render noticias ——— */
+  function hostFromFuente(f) {
+    if (f && f.dominio) return f.dominio;
+    try {
+      return new URL(f.url).hostname.replace(/^www\./, "");
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function faviconUrl(host) {
+    if (!host) return "";
+    return "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(host) + "&sz=32";
+  }
+
   function renderNews() {
     const foco = document.getElementById("filter-foco").value;
     const minImp = Number(document.getElementById("filter-impacto").value);
@@ -1051,18 +1250,35 @@
       const tags = (n.tags || []).map(function (t) {
         return '<span class="tag">#' + esc(t) + "</span>";
       }).join("");
+      const host = hostFromFuente(n.fuente);
+      const fav = faviconUrl(host);
+      const img = n.imagen || "";
+      const srcUrl = n.fuente && n.fuente.url ? n.fuente.url : "#";
       return (
         '<article class="news-card">' +
-          '<div class="score-badge ' + scoreClass(n.impacto) + '" title="Impacto ' + n.impacto + '/10">' +
-            '<span>' + n.impacto + "</span>" +
-            '<span class="lbl">impacto</span>' +
+          '<div class="news-media">' +
+            '<div class="score-badge ' + scoreClass(n.impacto) + '" title="Impacto ' + n.impacto + '/10">' +
+              '<span>' + n.impacto + "</span>" +
+              '<span class="lbl">impacto</span>' +
+            "</div>" +
+            (img
+              ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add(\'broken\')" />'
+              : "") +
+            '<div class="media-fallback" aria-hidden="true">◈</div>' +
           "</div>" +
           '<div class="news-body">' +
             '<div class="news-top">' + badges + "</div>" +
-            '<h3 class="news-title">' + esc(n.titulo) + "</h3>" +
+            '<h3 class="news-title"><a href="' + esc(srcUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(n.titulo) + "</a></h3>" +
             '<p class="news-why">' + esc(n.porQueImporta) + "</p>" +
+            '<a class="source-row" href="' + esc(srcUrl) + '" target="_blank" rel="noopener noreferrer">' +
+              (fav ? '<img class="source-favicon" src="' + esc(fav) + '" alt="" width="18" height="18" loading="lazy" onerror="this.style.visibility=\'hidden\'" />' : "") +
+              '<div class="source-meta">' +
+                '<span class="source-name">' + esc(n.fuente.nombre) + "</span>" +
+                '<span class="source-host">' + esc(host) + "</span>" +
+              "</div>" +
+              '<span class="source-cta">Leer fuente ↗</span>' +
+            "</a>" +
             '<div class="news-footer">' +
-              '<a class="fuente-link" href="' + esc(n.fuente.url) + '" target="_blank" rel="noopener noreferrer">↗ ' + esc(n.fuente.nombre) + "</a>" +
               '<div class="tags">' + tags + "</div>" +
             "</div>" +
           "</div>" +
