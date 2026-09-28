@@ -1,6 +1,6 @@
 # Noticias IA — Dashboard
 
-Dashboard local (HTML+CSS+JS, un solo archivo) para visualizar el resumen de noticias de IA, filtrar por foco/impacto, y preparar una **cola de publicación** para handoff a un bot de LinkedIn separado.
+Dashboard local (HTML+CSS+JS, un solo archivo) para visualizar el resumen de noticias de IA, filtrar por foco/impacto, **seleccionar noticias** para el Generador de posts, y preparar una **cola de publicación** para handoff a un bot de LinkedIn separado.
 
 **Este dashboard no publica nada.** Solo guarda borradores en `localStorage` y exporta JSON.
 
@@ -36,9 +36,11 @@ Copias: `/workspace/noticias-ia-dashboard/` · repo git `/workspace/noticias-ia-
 1. **Ranking** de noticias ordenado por impacto (~11 ítems con imagen + URL de fuente).
 2. **Filtros** por foco (sector / producto / investigación / técnico) e impacto mínimo 1–10.
 3. **Cards media-rich** — miniatura, badge de impacto, fila de origen (favicon + host) y CTA «Leer fuente».
-4. **Aprende** — teaser didáctico con nota de diagrama Mermaid.
-5. **Cola de publicación** — Guardar / Quitar posts y reenvíos; persiste en `localStorage` con clave `noticias-ia-dashboard-v1`.
-6. **Exportar JSON** — descarga handoff para el publisher bot (`noticias-ia-cola-YYYYMMDD.json`).
+4. **Selección «Interesante»** — multi-select en cada noticia; opcional pedido (post / reenvío / didáctico). Persiste en `localStorage` (`selectedNewsIds` junto a `queueIds`).
+5. **Enviar a generador** — descarga (+ copia al portapapeles) el handoff `noticias-ia-seleccion-v1` para el bot «Generador de posts de IA» (`noticias-ia-seleccion-YYYYMMDD-HHMM.json`). Ver contrato en `handoff-generador-posts.md`.
+6. **Aprende** — teaser didáctico con nota de diagrama Mermaid.
+7. **Cola de publicación** — Guardar / Quitar posts y reenvíos; persiste en `localStorage` con clave `noticias-ia-dashboard-v1`.
+8. **Exportar JSON (cola)** — descarga handoff para el publisher bot (`noticias-ia-cola-YYYYMMDD.json`).
 
 ## Datos seed
 

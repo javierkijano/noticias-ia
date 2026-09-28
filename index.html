@@ -759,6 +759,117 @@
 
     .draft-link:hover { text-decoration: underline; }
 
+
+    /* ——— News selection ——— */
+    .news-card.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 8px 28px rgba(91, 140, 255, 0.22);
+      background: linear-gradient(180deg, rgba(91, 140, 255, 0.08), transparent 40%), var(--bg-card);
+    }
+
+    .news-select-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.55rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .interesante-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .interesante-toggle input {
+      width: 1.05rem;
+      height: 1.05rem;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .news-card.selected .interesante-toggle {
+      color: var(--accent);
+    }
+
+    .pedido-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .pedido-wrap label {
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.68rem;
+    }
+
+    .pedido-wrap select {
+      padding: 0.3rem 1.6rem 0.3rem 0.55rem;
+      font-size: 0.78rem;
+      min-width: 7.5rem;
+      background-color: var(--bg-elev);
+    }
+
+    /* ——— Selection toolbar ——— */
+    .select-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.85rem 1.1rem;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+    }
+
+    .select-toolbar .sel-info {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .select-toolbar .sel-info strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .select-toolbar .sel-hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      max-width: 46ch;
+    }
+
+    .select-toolbar .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .btn-generador {
+      background: linear-gradient(135deg, #3dd68c, #22d3ee);
+      color: #042014;
+      box-shadow: 0 4px 14px rgba(61, 214, 140, 0.28);
+    }
+
+    .btn-generador:hover { filter: brightness(1.06); }
+
     /* ——— Export bar ——— */
     .export-bar {
       display: flex;
@@ -876,7 +987,7 @@
         <div class="brand-mark" aria-hidden="true">IA</div>
         <div>
           <h1>Noticias IA</h1>
-          <p class="subtitle">Ranking de impacto · cola de publicación (sin publicar)</p>
+          <p class="subtitle">Ranking · selección para generador · cola de publicación</p>
         </div>
       </div>
       <div class="header-meta">
@@ -904,6 +1015,17 @@
       </div>
       <div class="filter-actions">
         <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-filters">Restablecer</button>
+      </div>
+    </div>
+
+    <div class="select-toolbar" role="toolbar" aria-label="Selección para generador">
+      <div class="sel-info">
+        <span>Seleccionadas: <strong id="selected-count">0</strong></span>
+        <span class="sel-hint">Marca «Interesante» en las noticias y envía el JSON al Generador de posts de IA.</span>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-selection">Limpiar selección</button>
+        <button type="button" class="btn btn-generador" id="btn-send-generador" disabled>↗ Enviar a generador</button>
       </div>
     </div>
 
@@ -940,7 +1062,7 @@
     </section>
 
     <div class="export-bar">
-      <p class="hint">Exporta la cola (posts + reenvíos) como JSON para el bot de LinkedIn. Nada se publica desde aquí.</p>
+      <p class="hint">Exporta la <strong>cola de borradores</strong> (posts + reenvíos) como JSON para el publisher. La selección de noticias usa «Enviar a generador» arriba.</p>
       <div class="actions">
         <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-queue">Vaciar cola</button>
         <button type="button" class="btn btn-primary" id="btn-export">⬇ Exportar JSON</button>
@@ -1142,6 +1264,12 @@
 
   /* ——— State ——— */
   let queueIds = [];
+  let selectedNewsIds = [];
+  let newsPedidos = {};
+
+  function validNewsId(id) {
+    return SEED.noticias.some(function (n) { return n.id === id; });
+  }
 
   function loadQueue() {
     try {
@@ -1153,8 +1281,23 @@
           return SEED.borradores.some(function (b) { return b.id === id; });
         });
       }
+      if (parsed && Array.isArray(parsed.selectedNewsIds)) {
+        selectedNewsIds = parsed.selectedNewsIds.filter(validNewsId);
+      }
+      if (parsed && parsed.newsPedidos && typeof parsed.newsPedidos === "object") {
+        newsPedidos = {};
+        Object.keys(parsed.newsPedidos).forEach(function (id) {
+          if (!validNewsId(id)) return;
+          var p = parsed.newsPedidos[id];
+          if (p === "post" || p === "reenvio" || p === "didactico") {
+            newsPedidos[id] = p;
+          }
+        });
+      }
     } catch (e) {
       queueIds = [];
+      selectedNewsIds = [];
+      newsPedidos = {};
     }
   }
 
@@ -1163,9 +1306,27 @@
       version: 1,
       updatedAt: new Date().toISOString(),
       fechaResumen: SEED.meta.fecha,
-      queueIds: queueIds.slice()
+      queueIds: queueIds.slice(),
+      selectedNewsIds: selectedNewsIds.slice(),
+      newsPedidos: Object.assign({}, newsPedidos)
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  }
+
+  function isSelected(id) {
+    return selectedNewsIds.indexOf(id) !== -1;
+  }
+
+  function getPedido(id) {
+    return newsPedidos[id] || "post";
+  }
+
+  function updateSelectedCount() {
+    var n = selectedNewsIds.length;
+    var el = document.getElementById("selected-count");
+    if (el) el.textContent = String(n);
+    var btn = document.getElementById("btn-send-generador");
+    if (btn) btn.disabled = n === 0;
   }
 
   /* ——— Helpers ——— */
@@ -1254,8 +1415,14 @@
       const fav = faviconUrl(host);
       const img = n.imagen || "";
       const srcUrl = n.fuente && n.fuente.url ? n.fuente.url : "#";
+      const selected = isSelected(n.id);
+      const pedido = getPedido(n.id);
+      const pedidoOpts = ["post", "reenvio", "didactico"].map(function (p) {
+        var labels = { post: "Post", reenvio: "Reenvío", didactico: "Didáctico" };
+        return '<option value="' + p + '"' + (pedido === p ? " selected" : "") + ">" + labels[p] + "</option>";
+      }).join("");
       return (
-        '<article class="news-card">' +
+        '<article class="news-card' + (selected ? " selected" : "") + '" data-news-id="' + esc(n.id) + '">' +
           '<div class="news-media">' +
             '<div class="score-badge ' + scoreClass(n.impacto) + '" title="Impacto ' + n.impacto + '/10">' +
               '<span>' + n.impacto + "</span>" +
@@ -1281,10 +1448,23 @@
             '<div class="news-footer">' +
               '<div class="tags">' + tags + "</div>" +
             "</div>" +
+            '<div class="news-select-row">' +
+              '<label class="interesante-toggle">' +
+                '<input type="checkbox" data-action="toggle-select" data-id="' + esc(n.id) + '"' + (selected ? " checked" : "") + " />" +
+                "<span>Interesante</span>" +
+              "</label>" +
+              (selected
+                ? '<div class="pedido-wrap">' +
+                    '<label for="pedido-' + esc(n.id) + '">Pedido</label>' +
+                    '<select id="pedido-' + esc(n.id) + '" data-action="set-pedido" data-id="' + esc(n.id) + '">' + pedidoOpts + "</select>" +
+                  "</div>"
+                : "") +
+            "</div>" +
           "</div>" +
         "</article>"
       );
     }).join("");
+    updateSelectedCount();
   }
 
   /* ——— Aprende ——— */
@@ -1389,7 +1569,133 @@
     document.getElementById("modal").classList.remove("open");
   }
 
-  /* ——— Export ——— */
+  /* ——— Selección noticias → generador ——— */
+  function onNewsGridChange(e) {
+    var input = e.target.closest('input[data-action="toggle-select"]');
+    if (input) {
+      var id = input.getAttribute("data-id");
+      if (!validNewsId(id)) return;
+      if (input.checked) {
+        if (selectedNewsIds.indexOf(id) === -1) selectedNewsIds.push(id);
+        if (!newsPedidos[id]) newsPedidos[id] = "post";
+      } else {
+        selectedNewsIds = selectedNewsIds.filter(function (x) { return x !== id; });
+      }
+      saveQueue();
+      renderNews();
+      toast(input.checked ? "Marcada como interesante" : "Quitada de la selección");
+      return;
+    }
+    var sel = e.target.closest('select[data-action="set-pedido"]');
+    if (!sel) return;
+    var id = sel.getAttribute("data-id");
+    var val = sel.value;
+    if (!validNewsId(id)) return;
+    if (val === "post" || val === "reenvio" || val === "didactico") {
+      newsPedidos[id] = val;
+      saveQueue();
+      toast("Pedido: " + val);
+    }
+  }
+
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+
+  function stampLocal() {
+    var d = new Date();
+    return (
+      d.getFullYear() +
+      pad2(d.getMonth() + 1) +
+      pad2(d.getDate()) +
+      "-" +
+      pad2(d.getHours()) +
+      pad2(d.getMinutes())
+    );
+  }
+
+  function buildSeleccionPayload() {
+    var items = selectedNewsIds.map(function (id) {
+      return SEED.noticias.find(function (n) { return n.id === id; });
+    }).filter(Boolean).map(function (n) {
+      return {
+        id: n.id,
+        titulo: n.titulo,
+        porQueImporta: n.porQueImporta,
+        fuente: {
+          nombre: n.fuente.nombre,
+          url: n.fuente.url
+        },
+        focos: (n.focos || []).slice(),
+        impacto: n.impacto,
+        pedido: getPedido(n.id)
+      };
+    });
+    return {
+      schema: "noticias-ia-seleccion-v1",
+      plataforma: "linkedin",
+      items: items
+    };
+  }
+
+  function downloadJson(payload, filename) {
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }
+
+  function copyJsonToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(function () { return true; }).catch(function () { return false; });
+    }
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return Promise.resolve(!!ok);
+    } catch (e) {
+      return Promise.resolve(false);
+    }
+  }
+
+  function enviarAGenerador() {
+    if (!selectedNewsIds.length) {
+      toast("Selecciona al menos una noticia");
+      return;
+    }
+    var payload = buildSeleccionPayload();
+    var text = JSON.stringify(payload, null, 2);
+    var filename = "noticias-ia-seleccion-" + stampLocal() + ".json";
+    downloadJson(payload, filename);
+    copyJsonToClipboard(text).then(function (copied) {
+      toast(
+        "Handoff generador (" + payload.items.length + ")" +
+        (copied ? " · copiado al portapapeles" : "")
+      );
+    });
+  }
+
+  function clearSelection() {
+    if (!selectedNewsIds.length) {
+      toast("No hay selección");
+      return;
+    }
+    selectedNewsIds = [];
+    saveQueue();
+    renderNews();
+    toast("Selección limpiada");
+  }
+
+  /* ——— Export cola ——— */
   function exportJson() {
     const items = queueIds.map(getDraft).filter(Boolean).map(function (b) {
       return {
@@ -1436,6 +1742,7 @@
     renderNews();
     renderAprende();
     renderCola();
+    updateSelectedCount();
 
     document.getElementById("filter-foco").addEventListener("change", renderNews);
     document.getElementById("filter-impacto").addEventListener("input", renderNews);
@@ -1447,6 +1754,11 @@
 
     document.getElementById("draft-pool").addEventListener("click", onColaClick);
     document.getElementById("draft-queue").addEventListener("click", onColaClick);
+
+    document.getElementById("news-grid").addEventListener("change", onNewsGridChange);
+
+    document.getElementById("btn-send-generador").addEventListener("click", enviarAGenerador);
+    document.getElementById("btn-clear-selection").addEventListener("click", clearSelection);
 
     document.getElementById("btn-export").addEventListener("click", exportJson);
     document.getElementById("btn-clear-queue").addEventListener("click", function () {
