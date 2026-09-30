@@ -1,47 +1,78 @@
-# Noticias IA — Dashboard
+# Noticias IA
 
-Dashboard local (HTML+CSS+JS, un solo archivo) para visualizar el resumen de noticias de IA, filtrar por foco/impacto, **seleccionar noticias** para el Generador de posts, y preparar una **cola de publicación** para handoff a un bot de LinkedIn separado.
+App Next.js (App Router) + Supabase para generar y consultar noticias diarias de **IA · robótica · hardware / manufacturing**, con auth (favoritos, historial) y stubs para rewrite / generador de posts (feature de pago futura).
 
-**Este dashboard no publica nada.** Solo guarda borradores en `localStorage` y exporta JSON.
+Live (hoy estático): https://noticias.metaversetech.es  
+Repo: https://github.com/javierkijano/noticias-ia
 
-## Live
+## Architecture (phase 1)
 
-GitHub Pages: https://javierkijano.github.io/noticias-ia/
+1. **`POST /api/news/generate-for-day`** — genera el batch del día pedido (default = hoy). Si el día **ya tiene filas** → **no regenera** (idempotente).
+2. **Antiduplicados cross-day** — no inserta si `url_hash` o `normalized_title` ya existen en días anteriores.
+3. **Rewrite** — `POST /api/news/rewrite` stub (no es el flujo normal).
+4. **Supabase** — migraciones + cliente con placeholders; credenciales vía Secrets Manager (Metaverse).
+5. **Auth** — magic link / OAuth stubs; favoritos + `query_history`.
+6. **`POST /api/posts/generate`** — stub de feature de pago; el bot Generador de posts consumirá la DB más adelante.
+7. Legacy dashboard: `legacy/index.html` (UX de referencia). Handoff: `handoff-generador-posts.md`.
 
-## Cómo abrir
-
-### Opción A — archivo directo
-Abre en el navegador:
-
-```
-file:///home/box/noticias-ia/dashboard/index.html
-```
-
-(o arrastra `index.html` a Chrome/Firefox/Edge).
-
-### Opción B — servidor local
-Desde esta carpeta:
+## Local setup
 
 ```bash
-cd /home/box/noticias-ia/dashboard
-python3 -m http.server 8765
+cd /Users/jq/Projects/noticias-ia   # or your clone
+cp .env.example .env.local          # fill when secrets exist; mock works without
+npm install
+npm run dev
 ```
 
-Luego visita: http://localhost:8765/
+Open http://localhost:3000
 
-Copias: `/workspace/noticias-ia-dashboard/` · repo git `/workspace/noticias-ia-gh/`
+### Env vars
 
-## Funciones
+See `.env.example`. Never commit real secrets.
 
-1. **Ranking** de noticias ordenado por impacto (~11 ítems con imagen + URL de fuente).
-2. **Filtros** por foco (sector / producto / investigación / técnico) e impacto mínimo 1–10.
-3. **Cards media-rich** — miniatura, badge de impacto, fila de origen (favicon + host) y CTA «Leer fuente».
-4. **Selección «Interesante»** — multi-select en cada noticia; opcional pedido (post / reenvío / didáctico). Persiste en `localStorage` (`selectedNewsIds` junto a `queueIds`).
-5. **Enviar a generador** — descarga (+ copia al portapapeles) el handoff `noticias-ia-seleccion-v1` para el bot «Generador de posts de IA» (`noticias-ia-seleccion-YYYYMMDD-HHMM.json`). Ver contrato en `handoff-generador-posts.md`.
-6. **Aprende** — teaser didáctico con nota de diagrama Mermaid.
-7. **Cola de publicación** — Guardar / Quitar posts y reenvíos; persiste en `localStorage` con clave `noticias-ia-dashboard-v1`.
-8. **Exportar JSON (cola)** — descarga handoff para el publisher bot (`noticias-ia-cola-YYYYMMDD.json`).
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `NEXT_PUBLIC_SUPABASE_URL` | for DB/auth | Metaverse Supabase project |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | for DB/auth | public anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | for generate writes | server only |
+| `NEWS_PROVIDER` | no | `mock` (default) or `openai` |
+| `OPENAI_API_KEY` | only if openai | never invent keys |
+| `NEXT_PUBLIC_APP_URL` | no | default localhost |
 
-## Datos seed
+Without Supabase env, APIs fall back to an **in-memory store** (idempotency/dedupe still enforced in-process).
 
-Incrustados en el propio `index.html` (objeto `SEED`), derivados de `muestra-resumen-ia-v2.md` + fuentes oficiales verificadas. Cada noticia incluye `imagen` (OG/CDN) y `fuente.url` clicable.
+### Migrations
+
+```bash
+# Example with Supabase CLI (when linked):
+# supabase db push
+# Or paste supabase/migrations/20261001000000_init.sql in the SQL editor.
+```
+
+### Scripts
+
+- `npm run dev` — development
+- `npm run build` / `npm start` — production
+- `npm run typecheck` — TypeScript
+
+## API
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/api/health` | liveness + config flags |
+| POST | `/api/news/generate-for-day` | body `{ "day": "YYYY-MM-DD" }` optional; idempotent |
+| GET | `/api/news?day=YYYY-MM-DD` | list by day |
+| GET | `/api/news/:id` | single item |
+| GET/POST | `/api/favorites` | auth required (Supabase) |
+| DELETE | `/api/favorites/:id` | auth required |
+| GET/POST | `/api/history` | auth required |
+| POST | `/api/news/rewrite` | **501 stub** (future paid) |
+| POST | `/api/posts/generate` | **501 stub** (future paid) |
+
+## Coolify
+
+Current Coolify app is **static**. Cutover to Node/Next is owned by **Coolify Expert** — see `BLOCKERS.md`. Do not assume this PR changes production hosting.
+
+## Branch
+
+Feature work lands on `feat/api-supabase-app`.
