@@ -1,0 +1,15 @@
+# Coolify / Nixpacks: Node 22 + install resilient to stale .cache (EBUSY)
+[variables]
+NIXPACKS_NODE_VERSION = "22"
+
+[phases.install]
+cmds = [
+  "rm -rf node_modules/.cache || true",
+  "NPM_CONFIG_PRODUCTION=false npm ci"
+]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm start"
